@@ -7,7 +7,6 @@ defineProps<{
 <template>
   <label :class="{ 'checked': isChecked }">
     <input type="checkbox" :checked="isChecked"/>
-    {{isChecked}}
     <slot></slot>
   </label>
 </template>
