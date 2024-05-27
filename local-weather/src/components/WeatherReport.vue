@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {onMounted, ref, type Ref} from "vue";
+import WindDirection from "@/components/WindDirection.vue";
 
 type WeatherData = {
   location: {
@@ -47,6 +48,14 @@ const fetchWeather = async (coords: Coords): Promise<WeatherData> => {
   return data;
 };
 
+const formatDate = (dateString: Date): string => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("default", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(date);
+}
+
 onMounted(async () => {
   const { latitude, longitude } = props.coords;
   data.value = await fetchWeather({latitude, longitude});
@@ -61,7 +70,7 @@ onMounted(async () => {
 text-black"
   >
     <div class="basis-1/4 text-left">
-      <img :src="data.current.condition.icon" class="h-16 w-16" />
+      <img :src="data.current.condition.icon" class="h-16 w-16" alt="weather"/>
     </div>
     <div class="basis-3/4 text-left">
       <h1 class="text-3xl font-bold">
@@ -71,6 +80,9 @@ text-black"
       </h1>
       <p>{{ data.location.name }} {{ data.location.region }}</p>
       <p>Precipitation: {{ data.current.precip_mm }}mm</p>
+      <p>{{ formatDate(data.location.localtime) }}</p>
+      <p>Wind: {{ data.current.wind_kph }} kph </p>
+      <WindDirection :degrees="data.current.wind_degree" />
     </div>
   </article>
   <div v-else>Loading...</div>
