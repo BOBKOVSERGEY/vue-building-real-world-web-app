@@ -1,4 +1,4 @@
-page 64
+page 96
 
 https://github.com/PacktPublishing/Building-Real-world-Web-Applications-with-Vue.js-3
 
