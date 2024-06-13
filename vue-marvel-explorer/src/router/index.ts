@@ -10,9 +10,14 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue')
     },
     {
-      path: '/search',
+      path: '/search/:letters?/:page?',
       name: 'search',
       component: () => import('@/views/SearchView.vue')
+    },
+    {
+      path: '/error',
+      name: 'error',
+      component: () => import('@/views/ErrorView.vue')
     },
   ]
 })
