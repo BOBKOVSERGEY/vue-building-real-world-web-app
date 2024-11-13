@@ -13,6 +13,7 @@ declare module 'vue' {
     CalendarDays: typeof import('./src/components/CalendarDays.vue')['default']
     CookingInstructions: typeof import('./src/components/CookingInstructions.vue')['default']
     MealPlanner: typeof import('./src/components/MealPlanner.vue')['default']
+    RecipeRating: typeof import('./src/components/rating/RecipeRating.vue')['default']
     RecipeSearch: typeof import('./src/components/RecipeSearch.vue')['default']
     RecipesList: typeof import('./src/components/RecipesList.vue')['default']
     RecipeTable: typeof import('./src/components/RecipeTable.vue')['default']

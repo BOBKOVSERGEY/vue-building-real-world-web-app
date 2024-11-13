@@ -1,10 +1,12 @@
 <script setup lang="ts">
 
 import { useFormatDate } from '@/composables/formatters'
-import {Recipe} from '@/types/spoonacular'
 import AppLink from '@/components/AppLink.vue'
+import { usePlannerStore } from '@/stores/planner'
 
-const emits = defineEmits(['daySelected', 'recipeRemoved'])
+const emits = defineEmits(['daySelected'])
+
+const plannerStore = usePlannerStore()
 
 interface Today {
   id: number
@@ -27,10 +29,11 @@ const addRecipeToDay = (card: Card): void => {
   emits('daySelected', card)
 }
 
-const recipeRemoved = (recipe: Today, date: Date): void => {
-  emits('recipeRemoved', recipe, date)
-}
+const removeFromDay = (recipes: { id: number, date: Date }): void => {
+  const { id, date } = recipes
 
+  plannerStore.removeRecipeByIdDate({ id, date })
+}
 
 </script>
 
@@ -70,7 +73,7 @@ const recipeRemoved = (recipe: Today, date: Date): void => {
           <v-btn
             text=""
             icon="mdi-trash-can-outline"
-            @click="recipeRemoved(today, card.date)"
+            @click="removeFromDay({ id: today.id, date: card.date })"
           />
         </v-card-actions>
       </v-card>

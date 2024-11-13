@@ -3,7 +3,10 @@ import type {Recipe} from '@/types/spoonacular'
 import {onMounted, ref} from 'vue'
 import {useRecipeInformation} from '@/composables/recipeApi'
 import AppLoader from '@/components/AppLoader.vue'
+import { useCacheStore } from '@/stores/cache'
+import RecipeRating from '@/components/rating/RecipeRating.vue'
 
+const store = useCacheStore()
 interface Props {
   id: number
   activePanel?: number
@@ -15,7 +18,16 @@ const props = withDefaults(defineProps<Props>(), {
 const recipe = ref<Recipe | null>(null)
 
 const getRecipeDetails = async (id: number): Promise<void> => {
-  recipe.value = (await useRecipeInformation(id.toString())) as Recipe
+  const cacheKey = `recipe-details-${id}`
+
+  if (store.cachedData(cacheKey)) {
+    recipe.value = store.cachedData(cacheKey) as Recipe
+  } else {
+    const data = (await useRecipeInformation(id.toString())) as Recipe
+    store.cacheData(cacheKey, data)
+    recipe.value = data
+  }
+
 }
 
 const panel = ref<number | null>(props.activePanel)
@@ -41,6 +53,7 @@ onMounted(() => {
         <h1 class="text-h3 ma-4">
           {{ recipe.title }}
         </h1>
+        <recipe-rating :id="recipe.id" />
         <v-chip
           class="ma-2 my-4"
           color="primary"

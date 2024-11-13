@@ -4,24 +4,21 @@ import type { Ref } from 'vue'
 import CalendarCard from '@/components/CalendarCard.vue'
 import {RecipeResults} from '@/types/spoonacular'
 import RecipeSearch from '@/components/RecipeSearch.vue'
+import { usePlannerStore } from '@/stores/planner'
+import { useCacheStore } from '@/stores/cache'
+import {useRecipeInformation} from '@/composables/recipeApi'
 
+const store = usePlannerStore()
+const cacheStore = useCacheStore()
 
-
-const props = defineProps({
-  date: {
-    type: Date,
-    required: true,
-  },
-  days: {
-    type: Number,
-    required: false,
-    default: 7,
-  },
-  recipes: {
-    type: Array,
-    required: false,
-    value: [],
-  },
+interface Props {
+  date: Date
+  days?: number,
+  recipes: []
+}
+const props = withDefaults(defineProps<Props>(), {
+  days: 7,
+  recipes: () => []
 })
 
 interface Today {
@@ -43,7 +40,7 @@ const generateCards = (startDate: Date, numberOfDays: number): Card[] => {
   for (let i = 0; i < numberOfDays; i++) {
     const date = new Date(currentDate.getTime())
     const content = `Card ${i + 1}`
-    const recipesThisDay = (props.recipes || []).filter((recipe: any) => {
+    const recipesThisDay = props.recipes?.filter((recipe: any) => {
       const recipeDate = new Date(recipe.date).setHours(0, 0, 0, 0)
       return recipeDate === date.setHours(0, 0, 0, 0)
     }) as Today[]
@@ -70,19 +67,26 @@ const recipeDialogClose = (): void => {
   dialogVisible.value = false
 }
 
+const preloadRecipe = async (id: number): Promise<void> => {
+  const cacheKey = `recipe-details-${id}`
+
+  if(!cacheStore.cachedData(cacheKey)) {
+    const data = (await useRecipeInformation(id.toString())) as Recipe
+    cacheStore.cacheData(cacheKey, data)
+  }
+}
+
 const insertRecipeOnDay = (recipe: RecipeResults): void => {
   if (dateSelected.value) {
-    cards.value = cards.value.map((card) => {
-      if (card.date.getTime() === dateSelected.value?.getTime()) {
-        return { ...card, today: [...card.today, recipe] }
-      }
-      return card
-    })
+    preloadRecipe(recipe.id)
+
+    store.addRecipe({ ...recipe, date: dateSelected.value })
+
     recipeDialogClose()
   }
 }
 
-const removeRecipeFromDay = (recipe: { id: number }, date: Date): void => {
+/* const removeRecipeFromDay = (recipe: { id: number }, date: Date): void => {
   cards.value = cards.value.map((card) => {
     if (card.date.getTime() === date.getTime()) {
       return {
@@ -92,7 +96,7 @@ const removeRecipeFromDay = (recipe: { id: number }, date: Date): void => {
     }
     return card
   })
-}
+} */
 </script>
 
 <template>
@@ -113,7 +117,6 @@ const removeRecipeFromDay = (recipe: { id: number }, date: Date): void => {
           <CalendarCard
             :card="card"
             @day-selected="recipeDialogOpen"
-            @recipe-removed="removeRecipeFromDay"
           />
         </td>
       </tr>
